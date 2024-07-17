@@ -23,9 +23,11 @@ class Trie(Generic[T]):
         pointer = 0 # 현재 처리 중인 노드의 인덱스 가리키는거 
         for element in seq: # 자식 녿에 요소가 없으면 새로운 노드 추가 
             if element not in self.nodes[pointer].children: # 현재 가리키는 객체에 children 이 없다면 
-                new_node = TrieNode(body=element)
+                new_node = TrieNode(body=element) # element = 입력받은거 를 body에 넣는다 
                 self.nodes[pointer].children[element] = len(self.nodes)
-                self.nodes.append(new_node)
-            pointer = self.nodes[pointer].children[element]
-        self.nodes[pointer].is_end = True
+                 # 현재 노드의 자식 노드 딕셔널이ㅔ element를 키로 하고 벨류 값은 이게 len으로 해서 몇번째 값에 있는지 
+                self.nodes.append(new_node) # 리스트에 추가 
+            pointer = self.nodes[pointer].children[element] 
+            # 포인터 업데이트 다음 노드로 이동한다고 생각하면됨 element 키 값으로 접근하면 value값 리턴  
+        self.nodes[pointer].is_end = True # 끝나면 true 
 # 주어진 시퀸스를 트라이 자료 구조에 추가하는 역할 

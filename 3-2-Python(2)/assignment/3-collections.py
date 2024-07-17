@@ -5,13 +5,20 @@ from typing import (
     Hashable
 )
 
+# defaultdict > collection 모듈에서 제공하는 딕셔너리 서브 클래스 > 키가 존재하지 않아도 기본 값을 자동으로 생성 
 
 K = TypeVar("K", bound=Hashable)
 V = TypeVar("V")
 
 class defaultdict(dict[K, V], Generic[K, V]):
-    # 구현하세요!
-    pass
+    def __init__(self, default_factory: Callable[[], V]):
+        super().__init__()
+        self.default_factory = default_factory
+
+    def __getitem__(self, key: K) -> V:
+        if key not in self:
+            self[key] = self.default_factory()
+        return super().__getitem__(key)
 
 
 if __name__ == "__main__":
