@@ -4,7 +4,7 @@ from typing import (
     TypeVar,
     Hashable
 )
-
+# dict를 확장하여 기본값을 자동으로 생성해주는 defaultdict 클래스 
 # defaultdict > collection 모듈에서 제공하는 딕셔너리 서브 클래스 > 키가 존재하지 않아도 기본 값을 자동으로 생성 
 
 K = TypeVar("K", bound=Hashable)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
         test_dict_3: defaultdict[Hashable, list[int]] = defaultdict(lambda: [0, 1])
         for key in test_keys:
-            assert len(test_dict_3[key]) == 2
+            assert len(test_dict_3[key]) == 2 
             test_dict_3[key].append(2)
             assert str(test_dict_3[key] + [3, 4]) == '[0, 1, 2, 3, 4]'
 

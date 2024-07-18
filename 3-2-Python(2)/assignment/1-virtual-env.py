@@ -1,6 +1,9 @@
 import os
 import sys
 import pickle
+# 이 코드의 목적 : python 버전과 모듈 검색 경로(sys.path) 를 가져와서 > 딕셔너리 추가 > versions.pickle 파일에 저장 
+# 모듈 경로와 버전 정보를 추적하고 비교할 수 있음 
+
 
 # sys.path 는 파이썬 모듈 검색 경로 리스트 
 # 목적 > 스크립트가 어디서 실행되든지 간에 항상 현재 스크립트가 위치한 디렉토리 안에 version 파일을 생성하고 사용하기 위함  
