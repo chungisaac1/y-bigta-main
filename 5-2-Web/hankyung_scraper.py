@@ -1,13 +1,14 @@
 import json
 import time
 import random
+from typing import List, Dict, Any
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import logging
 from datetime import datetime
 
@@ -15,14 +16,14 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class HanKyungScraper:
-    def __init__(self, start_date, end_date, output):
+    def __init__(self, start_date: str, end_date: str, output: str) -> None:
         self.start_date = start_date
         self.end_date = end_date
         self.output = output
-        self.articles_data = []
+        self.articles_data: List[Dict[str, Any]] = []
         self.driver = self.setup_driver()
 
-    def setup_driver(self):
+    def setup_driver(self) -> webdriver.Chrome:
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
@@ -30,11 +31,11 @@ class HanKyungScraper:
         service = ChromeService(executable_path=ChromeDriverManager().install())
         return webdriver.Chrome(service=service, options=options)
 
-    def save_to_json(self):
+    def save_to_json(self) -> None:
         with open(self.output, 'w', encoding='utf-8') as f:
             json.dump(self.articles_data, f, ensure_ascii=False, indent=4)
 
-    def is_within_date_range(self, article_date_str):
+    def is_within_date_range(self, article_date_str: str) -> bool:
         try:
             article_date = datetime.strptime(article_date_str, '%Y.%m.%d')
             start_date = datetime.strptime(self.start_date, '%Y%m%d')
@@ -45,10 +46,10 @@ class HanKyungScraper:
             logging.error(f"날짜 파싱 오류: {e}")
             return False
 
-    def random_sleep(self, min_seconds=2, max_seconds=5):
+    def random_sleep(self, min_seconds: int = 2, max_seconds: int = 5) -> None:
         time.sleep(random.uniform(min_seconds, max_seconds))
 
-    def click_load_more_until_date(self, target_date):
+    def click_load_more_until_date(self, target_date: str) -> None:
         while True:
             try:
                 html = self.driver.page_source
@@ -82,13 +83,13 @@ class HanKyungScraper:
                 self.random_sleep(4, 6)
                 load_more_button.click()
                 logging.info("더보기 버튼 클릭 성공")
-                self.random_sleep(10, 15)
+                self.random_sleep(2, 4)
             except Exception as e:
                 logging.info("더 이상 '더보기' 버튼을 찾을 수 없음. 종료.")
                 logging.error(f"Error: {e}")
                 break
 
-    def scrape(self):
+    def scrape(self) -> None:
         try:
             logging.info("웹사이트 접속 시도 중...")
             self.driver.get('https://www.hankyung.com/all-news')
@@ -171,23 +172,31 @@ class HanKyungScraper:
 
                                     title = title_element.text.strip()
                                     href = title_element['href']
-                                    lead = txt_cont.select_one(".lead").text.strip()
+                                    lead_element = txt_cont.select_one(".lead")
+                                    if lead_element is None:
+                                        logging.warning("lead_element를 찾을 수 없음")
+                                        continue
+                                    lead = lead_element.text.strip()
                                     logging.info(f"기사 추출 중: {title}")
 
-                                    self.driver.get(href)
-                                    self.random_sleep(3, 6)
+                                    if isinstance(href, str):
+                                        self.driver.get(href)
+                                        self.random_sleep(3, 6)
+                                    else:
+                                        logging.error("유효하지 않은 href 타입")
+                                        continue
 
                                     html = self.driver.page_source
                                     soup = BeautifulSoup(html, 'html.parser')
 
                                     timestamp = soup.find(class_='article-timestamp')
-                                    if not timestamp:
-                                        logging.warning("timestamp를 찾을 수 없음")
+                                    if timestamp and isinstance(timestamp, Tag):
+                                        datetime_items = timestamp.find_all(class_='txt-date')
+                                        date_entered = datetime_items[0].text.strip() if len(datetime_items) > 0 else None
+                                        date_edited = datetime_items[1].text.strip() if len(datetime_items) > 1 else None
+                                    else:
+                                        logging.warning("timestamp를 찾을 수 없음 또는 유효하지 않은 타입")
                                         continue
-
-                                    datetime_items = timestamp.find_all(class_='txt-date')
-                                    date_entered = datetime_items[0].text.strip() if len(datetime_items) > 0 else None
-                                    date_edited = datetime_items[1].text.strip() if len(datetime_items) > 1 else None
 
                                     article_data = {
                                         'date': date_entered,
