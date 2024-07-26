@@ -227,4 +227,3 @@ class HanKyungScraper:
             logging.info("크롤링 완료 후 데이터 저장됨.")
             self.driver.quit()
             logging.info("드라이버 종료됨.")
-
