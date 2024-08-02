@@ -77,7 +77,7 @@ data_store: List[Data] = []
 @app.post("/list", response_model=List[Data])
 def post_list():
     student_list = [
-        Data(gi='23기', team='DE팀', role='전 부대장', name='이어흥'),
+        Data(gi='23기', team='DE팀', role='전 부대장', naAme='이어흥'),
         Data(gi='24기', team='DE팀', role='팀장', name='임채림'),
         Data(gi='22기', team='DS팀', role='교육부장', name='김지훈'),
         Data(gi='24기', team='DE팀', role='부회장', name='조윤영'),
