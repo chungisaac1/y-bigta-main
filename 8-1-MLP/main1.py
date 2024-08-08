@@ -8,7 +8,6 @@ import numpytorch as npt
 from numpytorch import tensor, nn, optim
 from assignment import MNISTClassificationModel
 
-
 def get_mnist() -> tuple[ndarray, ndarray, ndarray, ndarray]:
     path_x = '/home/isaac/y-bigta/y-project/8-1-MLP/data/train-images-idx3-ubyte.gz'
     path_y = '/home/isaac/y-bigta/y-project/8-1-MLP/data/train-labels-idx1-ubyte.gz'
@@ -25,7 +24,6 @@ def get_mnist() -> tuple[ndarray, ndarray, ndarray, ndarray]:
     y_train, y_val = y[:50000], y[50000:]
     return (x_train, y_train, x_val, y_val)
 
-
 def val(model: nn.Module, x_val: ndarray, y_val: ndarray) -> tuple[float, float]:
     preds = []
     for i in range(0, len(x_val), 32):
@@ -35,15 +33,14 @@ def val(model: nn.Module, x_val: ndarray, y_val: ndarray) -> tuple[float, float]
     micro = f1_score(y_val, preds, average="micro")
     return macro, micro
 
-
 if __name__ == '__main__':
     x_train, y_train, x_val, y_val = get_mnist()
 
-    ### edits allowed here ###
-    n_batch = 64
-    n_iter = 50
-    n_print = 100
-    n_val = 5
+    ### 하이퍼파라미터 설정 ###
+    n_batch = 32
+    n_iter = 50  # 50000 / 1000 = 50
+    n_print = 1
+    n_val = 2
     lr = 1e-03
     ##########################
 
@@ -53,27 +50,29 @@ if __name__ == '__main__':
 
     buf = 0
     for i in tqdm(range(1, n_iter+1)):
-        idx = np.random.permutation(50000)[:n_batch]
-        x, y = tensor(x_train[idx]), tensor(y_train[idx])
+        for _ in range(1000 // n_batch):
+            idx = np.random.choice(50000, n_batch, replace=False)
+            x, y = tensor(x_train[idx]), tensor(y_train[idx])
 
-        optimizer.zero_grad()
+            optimizer.zero_grad()
 
-        logits = model(x)
-        loss = criterion(logits, y)
-        if np.isnan(loss.item()):
-            break
+            logits = model(x)
+            loss = criterion(logits, y)
+            if np.isnan(loss.item()):
+                break
 
-        loss.backward()
-        optimizer.step()
+            loss.backward()
+            optimizer.step()
 
-        buf += loss.item()
+            buf += loss.item()
+
         if i % n_print == 0:
-            print(buf / n_print)
+            print(f"Iteration {i}, Loss: {buf / (1000 // n_batch):.4f}")
             buf = 0
 
         if i % n_val == 0:
             macro, micro = val(model, x_val, y_val)
-            print(f"macro: {macro:.9f} micro: {micro:.9f}")
+            print(f"Iteration {i}, Validation Macro F1: {macro:.4f}, Micro F1: {micro:.4f}")
 
     macro, micro = val(model, x_val, y_val)
-    print(f"\nfinal score\nmacro: {macro:.9f} micro: {micro:.9f}")
+    print(f"\nFinal Score\nMacro F1: {macro:.4f}, Micro F1: {micro:.4f}")
