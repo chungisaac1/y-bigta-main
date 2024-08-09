@@ -46,8 +46,12 @@ def max_pool2d(x: Tensor, kernel_size: int, stride: int) -> Tensor:
         for c in range(channels):
             for h in range(out_height):
                 for w in range(out_width):
+                    h_start = h * stride
+                    h_end = min(h_start + kernel_size, in_height)
+                    w_start = w * stride
+                    w_end = min(w_start + kernel_size, in_width)
                     out[b, c, h, w] = np.max(
-                        x[b, c, h*stride:h*stride+kernel_size, w*stride:w*stride+kernel_size]
+                        x[b, c, h_start:h_end, w_start:w_end]
                     )
 
     return Tensor(out)

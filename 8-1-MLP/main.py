@@ -40,11 +40,11 @@ if __name__ == '__main__':
     x_train, y_train, x_val, y_val = get_mnist()
 
     ### edits allowed here ###
-    n_batch = 64
-    n_iter = 50
+    n_batch = 128
+    n_iter = 1000
     n_print = 100
-    n_val = 5
-    lr = 1e-03
+    n_val = 20
+    lr = 0.001 # 학습률을 더 낮게 설정
     ##########################
 
     model = MNISTClassificationModel()
